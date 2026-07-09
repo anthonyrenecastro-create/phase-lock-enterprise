@@ -1,0 +1,144 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: phaselockgateways.platform.phaselock.io
+spec:
+  group: platform.phaselock.io
+  scope: Namespaced
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions:
+        - v1
+      clientConfig:
+        service:
+          namespace: phaselock-system
+          name: phaselock-operator-webhook
+          path: /convert-platform-phaselock-io
+        caBundle: ""
+  names:
+    plural: phaselockgateways
+    singular: phaselockgateway
+    kind: PhaseLockGateway
+    shortNames:
+      - plg
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+                  minimum: 1
+                tenantRuntimeCacheEnabled:
+                  type: boolean
+                auth:
+                  type: object
+                  properties:
+                    mode:
+                      type: string
+                      enum: [api_key, oidc]
+                    oidcIssuer:
+                      type: string
+                    oidcAudience:
+                      type: string
+                    oidcJwksUrl:
+                      type: string
+                    requiredGroups:
+                      type: array
+                      items:
+                        type: string
+                    groupRoleMap:
+                      type: array
+                      items:
+                        type: string
+                    oidc:
+                      type: object
+                      properties:
+                        sessionTtlSeconds:
+                          type: integer
+                          minimum: 60
+                        sessionMaxLifetimeSeconds:
+                          type: integer
+                          minimum: 300
+                        auditLogPath:
+                          type: string
+                        auditLogMaxBytes:
+                          type: integer
+                          minimum: 0
+                        auditLogBackupCount:
+                          type: integer
+                          minimum: 0
+                highAvailability:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    minAvailable:
+                      type: integer
+                      minimum: 1
+                airgap:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    allowOutboundNetwork:
+                      type: boolean
+                    allowedHosts:
+                      type: array
+                      items:
+                        type: string
+                policy:
+                  type: object
+                  properties:
+                    mode:
+                      type: string
+                      enum: [builtin, opa]
+                    opaUrl:
+                      type: string
+                    bundleConfigMapName:
+                      type: string
+                    defaultDecision:
+                      type: string
+                      enum: [deny, allow]
+                    decisionLogPath:
+                      type: string
+              required:
+                - image
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                observedGeneration:
+                  type: integer
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                      reason:
+                        type: string
+                      message:
+                        type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Ready
+          type: string
+          jsonPath: .status.phase
+        - name: Replicas
+          type: integer
+          jsonPath: .spec.replicas

@@ -1,0 +1,75 @@
+replicaCount: 1
+revisionHistoryLimit: 3
+
+image:
+  repository: ghcr.io/anthonyrenecastro-create/phase-lock-rag-api-llm-data-drift-preventer
+  tag: latest
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ha:
+  enabled: false
+  minAvailable: 1
+
+airgap:
+  enabled: false
+  allowOutboundNetwork: true
+  allowedHosts: ""
+
+state:
+  backend: memory
+  redisUrls: ""
+  tenantRuntimeCacheEnabled: "false"
+
+auth:
+  mode: api_key
+  apiKey: ""
+  oidc:
+    issuer: ""
+    audience: ""
+    jwksUrl: ""
+    authorizationUrl: ""
+    tokenUrl: ""
+    clientId: ""
+    clientSecret: ""
+    redirectUri: ""
+    scopes: "openid,profile,email,groups"
+    sessionSecret: ""
+    sessionTtlSeconds: "3600"
+    sessionMaxLifetimeSeconds: "86400"
+    cookieName: "phase_lock_session"
+    cookieSecure: "true"
+    auditLogPath: ""
+    auditLogMaxBytes: "10485760"
+    auditLogBackupCount: "5"
+    requiredGroups: ""
+    groupRoleMap: ""
+
+policy:
+  mode: builtin
+  opaUrl: ""
+  bundlePath: ""
+  defaultDecision: deny
+  decisionLogPath: ""
+  decisionLogMaxBytes: "10485760"
+  decisionLogBackupCount: "5"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
+env:
+  deterministicMode: "true"
+  driftSpikeThreshold: "0.80"
+  breakerTripCount: "3"
+  maxMetricWindow: "4096"
+  maxComputeSteps: "50000"
+  engineSeed: "7"

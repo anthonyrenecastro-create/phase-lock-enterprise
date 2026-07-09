@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phase-lock-sdk"
+version = "0.1.0"
+description = "Python SDK for Phase-Lock Drift Prevention Gateway"
+requires-python = ">=3.10"
+dependencies = [
+  "requests>=2.32.0,<3.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["phase_lock_sdk*"]

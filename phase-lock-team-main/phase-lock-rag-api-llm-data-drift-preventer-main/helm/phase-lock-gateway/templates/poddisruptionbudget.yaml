@@ -1,0 +1,11 @@
+{{- if .Values.ha.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: phase-lock-gateway
+spec:
+  minAvailable: {{ .Values.ha.minAvailable }}
+  selector:
+    matchLabels:
+      app: phase-lock-gateway
+{{- end }}

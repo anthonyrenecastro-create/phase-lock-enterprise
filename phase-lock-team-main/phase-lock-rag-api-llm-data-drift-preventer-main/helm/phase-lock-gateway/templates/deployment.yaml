@@ -1,0 +1,148 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phase-lock-gateway
+spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: phase-lock-gateway
+  template:
+    metadata:
+      labels:
+        app: phase-lock-gateway
+    spec:
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.image.pullSecrets | indent 8 }}
+      {{- end }}
+      {{- if .Values.ha.enabled }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: phase-lock-gateway
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: phase-lock-gateway
+      {{- end }}
+      containers:
+        - name: gateway
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: DETERMINISTIC_MODE
+              value: "{{ .Values.env.deterministicMode }}"
+            - name: DRIFT_ENGINE_SEED
+              value: "{{ .Values.env.engineSeed }}"
+            - name: DRIFT_SPIKE_THRESHOLD
+              value: "{{ .Values.env.driftSpikeThreshold }}"
+            - name: DRIFT_BREAKER_TRIP_COUNT
+              value: "{{ .Values.env.breakerTripCount }}"
+            - name: MAX_METRIC_WINDOW
+              value: "{{ .Values.env.maxMetricWindow }}"
+            - name: MAX_COMPUTE_STEPS
+              value: "{{ .Values.env.maxComputeSteps }}"
+            - name: AUTH_MODE
+              value: "{{ .Values.auth.mode }}"
+            - name: GATEWAY_API_KEY
+              value: "{{ .Values.auth.apiKey }}"
+            - name: OIDC_ISSUER
+              value: "{{ .Values.auth.oidc.issuer }}"
+            - name: OIDC_AUDIENCE
+              value: "{{ .Values.auth.oidc.audience }}"
+            - name: OIDC_JWKS_URL
+              value: "{{ .Values.auth.oidc.jwksUrl }}"
+            - name: OIDC_AUTHORIZATION_URL
+              value: "{{ .Values.auth.oidc.authorizationUrl }}"
+            - name: OIDC_TOKEN_URL
+              value: "{{ .Values.auth.oidc.tokenUrl }}"
+            - name: OIDC_CLIENT_ID
+              value: "{{ .Values.auth.oidc.clientId }}"
+            - name: OIDC_CLIENT_SECRET
+              value: "{{ .Values.auth.oidc.clientSecret }}"
+            - name: OIDC_REDIRECT_URI
+              value: "{{ .Values.auth.oidc.redirectUri }}"
+            - name: OIDC_SCOPES
+              value: "{{ .Values.auth.oidc.scopes }}"
+            - name: OIDC_SESSION_SECRET
+              value: "{{ .Values.auth.oidc.sessionSecret }}"
+            - name: OIDC_SESSION_TTL_SECONDS
+              value: "{{ .Values.auth.oidc.sessionTtlSeconds }}"
+            - name: OIDC_SESSION_MAX_LIFETIME_SECONDS
+              value: "{{ .Values.auth.oidc.sessionMaxLifetimeSeconds }}"
+            - name: OIDC_COOKIE_NAME
+              value: "{{ .Values.auth.oidc.cookieName }}"
+            - name: OIDC_COOKIE_SECURE
+              value: "{{ .Values.auth.oidc.cookieSecure }}"
+            - name: AUTH_AUDIT_LOG_PATH
+              value: "{{ .Values.auth.oidc.auditLogPath }}"
+            - name: AUTH_AUDIT_LOG_MAX_BYTES
+              value: "{{ .Values.auth.oidc.auditLogMaxBytes }}"
+            - name: AUTH_AUDIT_LOG_BACKUP_COUNT
+              value: "{{ .Values.auth.oidc.auditLogBackupCount }}"
+            - name: OIDC_REQUIRED_GROUPS
+              value: "{{ .Values.auth.oidc.requiredGroups }}"
+            - name: OIDC_GROUP_ROLE_MAP
+              value: "{{ .Values.auth.oidc.groupRoleMap }}"
+            - name: POLICY_MODE
+              value: "{{ .Values.policy.mode }}"
+            - name: OPA_URL
+              value: "{{ .Values.policy.opaUrl }}"
+            - name: POLICY_BUNDLE_PATH
+              value: "{{ .Values.policy.bundlePath }}"
+            - name: POLICY_DEFAULT_DECISION
+              value: "{{ .Values.policy.defaultDecision }}"
+            - name: POLICY_DECISION_LOG_PATH
+              value: "{{ .Values.policy.decisionLogPath }}"
+            - name: POLICY_DECISION_LOG_MAX_BYTES
+              value: "{{ .Values.policy.decisionLogMaxBytes }}"
+            - name: POLICY_DECISION_LOG_BACKUP_COUNT
+              value: "{{ .Values.policy.decisionLogBackupCount }}"
+            - name: AIRGAPPED_MODE
+              value: "{{ .Values.airgap.enabled }}"
+            - name: ALLOW_OUTBOUND_NETWORK
+              value: "{{ .Values.airgap.allowOutboundNetwork }}"
+            - name: AIRGAP_ALLOWED_HOSTS
+              value: "{{ .Values.airgap.allowedHosts }}"
+            - name: STATE_BACKEND
+              value: "{{ .Values.state.backend }}"
+            - name: STATE_REDIS_URLS
+              value: "{{ .Values.state.redisUrls }}"
+            - name: TENANT_RUNTIME_CACHE_ENABLED
+              value: "{{ .Values.state.tenantRuntimeCacheEnabled }}"
+            - name: HA_MODE_ENABLED
+              value: "{{ .Values.ha.enabled }}"
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: http
+          startupProbe:
+            httpGet:
+              path: /v1/health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          resources:
+{{ toYaml .Values.resources | indent 12 }}

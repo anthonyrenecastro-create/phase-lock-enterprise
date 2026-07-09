@@ -1,0 +1,38 @@
+apiVersion: platform.phaselock.io/v1alpha1
+kind: PhaseLockGateway
+metadata:
+  name: phase-lock-enterprise
+spec:
+  image: ghcr.io/anthonyrenecastro-create/phase-lock-rag-api-llm-data-drift-preventer:latest
+  replicas: 3
+  tenantRuntimeCacheEnabled: false
+  auth:
+    mode: oidc
+    oidcIssuer: https://idp.example.com
+    oidcAudience: phase-lock-gateway
+    oidcJwksUrl: https://idp.example.com/.well-known/jwks.json
+    oidc:
+      sessionTtlSeconds: 3600
+      sessionMaxLifetimeSeconds: 86400
+      auditLogPath: /var/log/phase-lock/auth-audit.jsonl
+      auditLogMaxBytes: 10485760
+      auditLogBackupCount: 5
+    requiredGroups:
+      - phase-lock-users
+    groupRoleMap:
+      - phase-lock-admins:admin
+      - phase-lock-analysts:analyst
+  highAvailability:
+    enabled: true
+    minAvailable: 2
+  airgap:
+    enabled: true
+    allowOutboundNetwork: false
+    allowedHosts:
+      - idp.example.com
+      - opa.svc.cluster.local
+  policy:
+    mode: opa
+    defaultDecision: deny
+    decisionLogPath: /var/log/phase-lock/policy-decisions.jsonl
+    bundleConfigMapName: phase-lock-policy-bundle

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: phase-lock-gateway
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: phase-lock-gateway
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http

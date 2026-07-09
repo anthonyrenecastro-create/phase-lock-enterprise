@@ -1,0 +1,35 @@
+{
+  "service": "phase-lock-gateway",
+  "waves": [
+    {
+      "name": "canary",
+      "maxTrafficPercent": 5,
+      "soakMinutes": 30,
+      "promotionCriteria": {
+        "errorRateThreshold": 0.01,
+        "maxP95LatencyMs": 400,
+        "minimumRequests": 500
+      }
+    },
+    {
+      "name": "regional",
+      "maxTrafficPercent": 50,
+      "soakMinutes": 60,
+      "promotionCriteria": {
+        "errorRateThreshold": 0.008,
+        "maxP95LatencyMs": 350,
+        "minimumRequests": 5000
+      }
+    },
+    {
+      "name": "global",
+      "maxTrafficPercent": 100,
+      "soakMinutes": 120,
+      "promotionCriteria": {
+        "errorRateThreshold": 0.005,
+        "maxP95LatencyMs": 300,
+        "minimumRequests": 15000
+      }
+    }
+  ]
+}

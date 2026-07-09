@@ -1,0 +1,6 @@
+apiVersion: v2
+name: phase-lock-gateway
+description: Helm chart for the phase-lock drift prevention gateway
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

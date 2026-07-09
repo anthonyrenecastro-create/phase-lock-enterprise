@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phase-lock-gateway"
+version = "0.1.0"
+description = "FastAPI gateway for HRM manifold-surgery drift stabilization"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.111.0,<0.112.0",
+  "uvicorn[standard]>=0.30.1,<0.31.0",
+  "pydantic>=2.8.2,<3.0.0",
+  "python-multipart>=0.0.9,<0.1.0",
+  "psycopg[binary]>=3.2.1,<4.0.0",
+  "PyJWT[crypto]>=2.9.0,<3.0.0",
+  "redis>=5.1.0,<6.0.0",
+  "kubernetes>=30.1.0,<31.0.0",
+]
+
+[project.scripts]
+phase-lock-gateway = "gateway.cli:main"
+phase-lock-operator = "gateway.operator_controller:run_operator"
+phase-lock-operator-webhook = "gateway.operator_webhook:run_webhook"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gateway*"]

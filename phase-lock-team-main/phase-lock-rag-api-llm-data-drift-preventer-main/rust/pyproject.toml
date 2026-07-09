@@ -1,0 +1,14 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "phase-lock-core"
+version = "0.1.0"
+description = "Rust core for phase-lock drift prevention gateway"
+requires-python = ">=3.10"
+
+[tool.maturin]
+module-name = "phase_lock_core"
+python-source = "."
+features = ["pyo3/extension-module"]
